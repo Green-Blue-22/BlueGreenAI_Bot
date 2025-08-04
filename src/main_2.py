@@ -140,10 +140,14 @@ def handle_photo(message):
     watermarked_path = f"{DOWNLOAD_DIR}/{photo.file_unique_id}_wm.jpg"
     add_watermark(raw_path, watermarked_path, user_id)
 
+    lat, lon = user_locations.get(user_id, ("Unknown", "Unknown"))
+    caption = f"📸 From user {user_name.get(user_id, user_id)}\n📍 Location: {lat}, {lon}"
     with open(watermarked_path, 'rb') as f:
-        bot.send_photo(GROUP_ID, f, caption=f"📸 From user {user_name.get(user_id, user_id)}")
-
+        bot.send_photo(GROUP_ID, f, caption=caption)
+    
     bot.send_message(message.chat.id, "✅ Photo verified and uploaded.")
+
+
 
 # ========= BLOCK OTHERS =========
 @bot.message_handler(func=lambda msg: True)
@@ -151,5 +155,30 @@ def block_others(message):
     if message.content_type != 'photo':
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, "❌ Only camera photos allowed.")
+
+
+user_locations = {}
+
+@bot.message_handler(content_types=['location'])
+def handle_location(message):
+    if message.location:
+        user_id = message.from_user.id
+        lat = message.location.latitude
+        lon = message.location.longitude
+        user_locations[user_id] = (lat, lon)
+        print(f"📍 Initial Location: {lat}, {lon}")
+
+
+@bot.edited_message_handler(func=lambda m: m.location is not None)
+def handle_live_location_update(message):
+    user_id = message.from_user.id
+    lat = message.location.latitude
+    lon = message.location.longitude
+    user_locations[user_id] = (lat, lon)
+
+    print(f"📍 Updated Live Location from {user_name.get(user_id, user_id)}: {lat}, {lon}")
+    bot.send_message(GROUP_ID, f"📍 Updated Live Location from {user_name.get(user_id, user_id)}: https://maps.google.com/?q={lat},{lon}")
+
+
 
 bot.polling()

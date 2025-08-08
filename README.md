@@ -25,3 +25,9 @@ help  - full details info
 
 ```
 
+
+```
+https://core.telegram.org/bots/features
+```
+
+

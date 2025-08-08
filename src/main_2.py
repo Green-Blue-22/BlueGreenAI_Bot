@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Simple Telegram Bot using pyTelegramBotAPI
+A basic bot that responds to commands and echoes messages
+"""
+
 import telebot
 import time
 import os
